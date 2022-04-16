@@ -8,12 +8,17 @@ import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.recommendation.RecommendationService;
 import com.example.api.core.review.Review;
 import com.example.api.core.review.ReviewService;
+import com.example.util.exceptions.InvalidInputException;
+import com.example.util.exceptions.NotFoundException;
+import com.example.util.http.HttpErrorInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -51,9 +56,30 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   public Product getProduct(int productId) {
-    String url = productServiceUrl + productId;
-    Product product = restTemplate.getForObject(url, Product.class);
-    return product;
+    try {
+      String url = productServiceUrl + productId;
+
+      Product product = restTemplate.getForObject(url, Product.class);
+
+      return product;
+    } catch (HttpClientErrorException ex) {
+      switch (ex.getStatusCode()) {
+        case NOT_FOUND:
+          throw new NotFoundException(getErrorMessage(ex));
+        case UNPROCESSABLE_ENTITY:
+          throw new InvalidInputException(getErrorMessage(ex));
+        default:
+          throw ex;
+      }
+    }
+  }
+
+  private String getErrorMessage(HttpClientErrorException ex) {
+    try {
+      return mapper.readValue(ex.getResponseBodyAsString(), HttpErrorInfo.class).getMessage();
+    } catch (IOException ioex) {
+      return ex.getMessage();
+    }
   }
 
   public List<Recommendation> getRecommendations(int productId) {

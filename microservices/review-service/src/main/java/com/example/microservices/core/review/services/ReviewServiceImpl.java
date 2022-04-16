@@ -2,6 +2,7 @@ package com.example.microservices.core.review.services;
 
 import com.example.api.core.review.Review;
 import com.example.api.core.review.ReviewService;
+import com.example.util.exceptions.InvalidInputException;
 import com.example.util.http.ServiceUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,14 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Override
   public List<Review> getReviews(int productId) {
+    if (productId < 1) {
+      throw new InvalidInputException("Invalid productId: " + productId);
+    }
+
+    if (productId == 213) {
+      return new ArrayList<>();
+    }
+
     List<Review> list = new ArrayList<>();
     list.add(new Review(
         productId,

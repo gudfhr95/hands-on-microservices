@@ -8,6 +8,7 @@ import com.example.api.composite.product.ServiceAddress;
 import com.example.api.core.product.Product;
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
+import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,8 +33,14 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
   @Override
   public ProductAggregate getProduct(int productId) {
     Product product = integration.getProduct(productId);
+    if (product == null) {
+      throw new NotFoundException("No product found for productId: " + productId);
+    }
+
     List<Recommendation> recommendations = integration.getRecommendations(productId);
+
     List<Review> reviews = integration.getReviews(productId);
+    
     return createProductAggregate(
         product,
         recommendations,

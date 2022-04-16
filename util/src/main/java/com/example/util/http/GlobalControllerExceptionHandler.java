@@ -1,5 +1,8 @@
 package com.example.util.http;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+
 import com.example.util.exceptions.InvalidInputException;
 import com.example.util.exceptions.NotFoundException;
 import org.slf4j.Logger;
@@ -16,18 +19,18 @@ public class GlobalControllerExceptionHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(GlobalControllerExceptionHandler.class);
 
-  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ResponseStatus(NOT_FOUND)
   @ExceptionHandler(NotFoundException.class)
   @ResponseBody
   public HttpErrorInfo handleNotFoundException(ServerHttpRequest request, Exception ex) {
-    return createHttpErrorInfo(HttpStatus.NOT_FOUND, request, ex);
+    return createHttpErrorInfo(NOT_FOUND, request, ex);
   }
 
-  @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+  @ResponseStatus(UNPROCESSABLE_ENTITY)
   @ExceptionHandler(InvalidInputException.class)
   @ResponseBody
   public HttpErrorInfo handleInvalidInputException(ServerHttpRequest request, Exception ex) {
-    return createHttpErrorInfo(HttpStatus.UNPROCESSABLE_ENTITY, request, ex);
+    return createHttpErrorInfo(UNPROCESSABLE_ENTITY, request, ex);
   }
 
   private HttpErrorInfo createHttpErrorInfo(

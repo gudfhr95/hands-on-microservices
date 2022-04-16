@@ -2,6 +2,7 @@ package com.example.microservices.core.recommendation.services;
 
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.recommendation.RecommendationService;
+import com.example.util.exceptions.InvalidInputException;
 import com.example.util.http.ServiceUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 
   @Override
   public List<Recommendation> getRecommendations(int productId) {
+    if (productId < 1) {
+      throw new InvalidInputException("Invalid productId: " + productId);
+    }
+
+    if (productId == 113) {
+      return new ArrayList<>();
+    }
+
     List<Recommendation> list = new ArrayList<>();
     list.add(new Recommendation(
         productId,
