@@ -6,11 +6,15 @@ import com.example.util.exceptions.InvalidInputException;
 import com.example.util.http.ServiceUtil;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class RecommendationServiceImpl implements RecommendationService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RecommendationServiceImpl.class);
 
   private final ServiceUtil serviceUtil;
 
@@ -26,6 +30,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     if (productId == 113) {
+      LOG.debug("No recommendations found for productId: {}", productId);
       return new ArrayList<>();
     }
 
@@ -54,6 +59,8 @@ public class RecommendationServiceImpl implements RecommendationService {
         "Content 3",
         serviceUtil.getServiceAddress()
     ));
+
+    LOG.debug("/recommendation response size: {}", list.size());
 
     return list;
   }
