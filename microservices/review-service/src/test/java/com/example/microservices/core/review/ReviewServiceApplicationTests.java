@@ -39,7 +39,8 @@ class ReviewServiceApplicationTests {
           .expectStatus().isBadRequest()
           .expectHeader().contentType(APPLICATION_JSON)
           .expectBody()
-          .jsonPath("$.path").isEqualTo("/review");
+          .jsonPath("$.path").isEqualTo("/review")
+          .jsonPath("$.message").isEqualTo("Required int parameter 'productId' is not present");
   }
 
   @Test
@@ -51,7 +52,8 @@ class ReviewServiceApplicationTests {
           .expectStatus().isBadRequest()
           .expectHeader().contentType(APPLICATION_JSON)
           .expectBody()
-          .jsonPath("$.path").isEqualTo("/review");
+          .jsonPath("$.path").isEqualTo("/review")
+          .jsonPath("$.message").isEqualTo("Type mismatch.");
   }
 
   @Test

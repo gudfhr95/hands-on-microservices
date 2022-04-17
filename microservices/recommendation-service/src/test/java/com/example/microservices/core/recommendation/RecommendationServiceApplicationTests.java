@@ -39,7 +39,8 @@ class RecommendationServiceApplicationTests {
           .expectStatus().isBadRequest()
           .expectHeader().contentType(APPLICATION_JSON)
           .expectBody()
-          .jsonPath("$.path").isEqualTo("/recommendation");
+          .jsonPath("$.path").isEqualTo("/recommendation")
+          .jsonPath("$.message").isEqualTo("Required int parameter 'productId' is not present");
   }
 
   @Test
@@ -51,7 +52,8 @@ class RecommendationServiceApplicationTests {
           .expectStatus().isBadRequest()
           .expectHeader().contentType(APPLICATION_JSON)
           .expectBody()
-          .jsonPath("$.path").isEqualTo("/recommendation");
+          .jsonPath("$.path").isEqualTo("/recommendation")
+          .jsonPath("$.message").isEqualTo("Type mismatch.");
   }
 
   @Test
