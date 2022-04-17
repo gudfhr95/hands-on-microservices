@@ -8,6 +8,10 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+ext {
+    mapstructVersion = "1.4.2.Final"
+}
+
 repositories {
     mavenCentral()
 }
@@ -18,15 +22,21 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
 
     compileOnly 'org.projectlombok:lombok'
+    compileOnly "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     testCompileOnly 'org.projectlombok:lombok'
+
     testAnnotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 }
 
 tasks.named('test') {
