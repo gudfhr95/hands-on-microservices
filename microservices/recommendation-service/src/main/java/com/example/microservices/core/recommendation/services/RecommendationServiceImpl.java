@@ -6,22 +6,18 @@ import com.example.util.exceptions.InvalidInputException;
 import com.example.util.http.ServiceUtil;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
 
   private static final Logger LOG = LoggerFactory.getLogger(RecommendationServiceImpl.class);
 
   private final ServiceUtil serviceUtil;
-
-  @Autowired
-  public RecommendationServiceImpl(ServiceUtil serviceUtil) {
-    this.serviceUtil = serviceUtil;
-  }
 
   @Override
   public List<Recommendation> getRecommendations(int productId) {

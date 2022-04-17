@@ -12,23 +12,15 @@ import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@AllArgsConstructor
 public class ProductCompositeServiceImpl implements ProductCompositeService {
 
   private final ServiceUtil serviceUtil;
   private ProductCompositeIntegration integration;
-
-  @Autowired
-  public ProductCompositeServiceImpl(
-      ServiceUtil serviceUtil,
-      ProductCompositeIntegration integration
-  ) {
-    this.serviceUtil = serviceUtil;
-    this.integration = integration;
-  }
 
   @Override
   public ProductAggregate getProduct(int productId) {
@@ -40,7 +32,7 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
     List<Recommendation> recommendations = integration.getRecommendations(productId);
 
     List<Review> reviews = integration.getReviews(productId);
-    
+
     return createProductAggregate(
         product,
         recommendations,

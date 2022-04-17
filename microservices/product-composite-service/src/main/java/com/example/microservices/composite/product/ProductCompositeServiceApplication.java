@@ -65,5 +65,4 @@ public class ProductCompositeServiceApplication {
   public static void main(String[] args) {
     SpringApplication.run(ProductCompositeServiceApplication.class, args);
   }
-
 }
