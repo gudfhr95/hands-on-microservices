@@ -9,7 +9,7 @@ spring.data.mongodb:
 logging:
   level:
     root: INFO
-    com.example: DEBUG
+    com.example.microservices: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
 ---

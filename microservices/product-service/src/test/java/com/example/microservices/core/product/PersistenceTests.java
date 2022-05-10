@@ -56,6 +56,7 @@ class PersistenceTests {
     repository.save(savedEntity);
 
     ProductEntity foundEntity = repository.findById(savedEntity.getId()).get();
+
     assertThat(foundEntity.getVersion()).isOne();
     assertThat(foundEntity.getName()).isEqualTo("n2");
   }
@@ -77,13 +78,14 @@ class PersistenceTests {
   @Test
   void duplicateError() {
     ProductEntity entity = new ProductEntity(savedEntity.getProductId(), "n", 1);
+
     assertThatThrownBy(() -> repository.save(entity))
         .isInstanceOf(DuplicateKeyException.class);
   }
 
   @Test
   void optimisticLockError() {
-    // Store the saved entity in two seperate entity objects
+    // Store the saved entity in two separate entity objects
     ProductEntity entity1 = repository.findById(savedEntity.getId()).get();
     ProductEntity entity2 = repository.findById(savedEntity.getId()).get();
 
@@ -92,7 +94,7 @@ class PersistenceTests {
     repository.save(entity1);
 
     // Update the entity using the second entity object.
-    // This should fail since the second entity now holds a old version number, i.e. a Optimistic Lock Error
+    // This should fail since the second entity now holds an old version number, i.e. an Optimistic Lock Error
     try {
       entity2.setName("n2");
       repository.save(entity2);
@@ -103,7 +105,8 @@ class PersistenceTests {
 
     // Get the updated entity from the database and verify its new state
     ProductEntity updatedEntity = repository.findById(savedEntity.getId()).get();
-    assertThat((int) updatedEntity.getVersion()).isEqualTo(1);
+
+    assertThat(updatedEntity.getVersion()).isOne();
     assertThat(updatedEntity.getName()).isEqualTo("n1");
   }
 
@@ -128,12 +131,14 @@ class PersistenceTests {
       boolean expectsNextPage
   ) {
     Page<ProductEntity> productPage = repository.findAll(nextPage);
+
     assertThat(productPage.getContent()
                           .stream()
                           .map(p -> p.getProductId())
                           .collect(Collectors.toList())
                           .toString()).isEqualTo(expectedProductIds);
     assertThat(productPage.hasNext()).isEqualTo(expectsNextPage);
+
     return productPage.nextPageable();
   }
 }

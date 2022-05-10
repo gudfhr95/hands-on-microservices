@@ -1,5 +1,6 @@
 package com.example.microservices.core.recommendation.persistence;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,7 +9,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collation = "recommendation")
+@Document(collection = "recommendation")
 @CompoundIndex(
     name = "prod-rec-id",
     unique = true,
@@ -17,6 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class RecommendationEntity {
 
   @Id

@@ -10,6 +10,7 @@ sourceCompatibility = '11'
 
 ext {
     mapstructVersion = "1.4.2.Final"
+    embedMongoVersion = "3.4.5"
 }
 
 repositories {
@@ -27,7 +28,7 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
-    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
+    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo:${embedMongoVersion}"
 
     compileOnly 'org.projectlombok:lombok'
     compileOnly "org.mapstruct:mapstruct-processor:${mapstructVersion}"
