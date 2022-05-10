@@ -1,0 +1,3 @@
+server.error.include-message: always
+
+spring.datasource.url: jdbc:h2:mem:review-db
