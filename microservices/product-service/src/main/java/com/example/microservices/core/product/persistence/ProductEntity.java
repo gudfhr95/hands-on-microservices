@@ -1,5 +1,6 @@
 package com.example.microservices.core.product.persistence;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,10 +9,11 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collation = "products")
+@Document(collection = "products")
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class ProductEntity {
 
   @Id

@@ -1,0 +1,5 @@
+server.error.include-message: always
+
+spring.data.mongodb.auto-index-creation: true
+
+spring.mongodb.embedded.version: 5.0.6
