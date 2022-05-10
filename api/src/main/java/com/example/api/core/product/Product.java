@@ -1,16 +1,18 @@
 package com.example.api.core.product;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@NoArgsConstructor(force = true)
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
+@Setter
 public class Product {
 
-  private final int productId;
-  private final String name;
-  private final int weight;
-  private final String serviceAddress;
+  private int productId;
+  private String name;
+  private int weight;
+  private String serviceAddress;
 }
