@@ -12,18 +12,71 @@ import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 public class ProductCompositeServiceImpl implements ProductCompositeService {
 
+  private final ProductCompositeIntegration integration;
   private final ServiceUtil serviceUtil;
-  private ProductCompositeIntegration integration;
 
   @Override
-  public ProductAggregate getProduct(int productId) {
+  public void createCompositeProduct(ProductAggregate body) {
+    try {
+      log.debug(
+          "createCompositeProduct: creates a new composite entity for productId: {}",
+          body.getProductId()
+      );
+
+      Product product = new Product(body.getProductId(), body.getName(), body.getWeight(), null);
+      integration.createProduct(product);
+
+      if (body.getRecommendations() != null) {
+        body.getRecommendations().forEach(r -> {
+          Recommendation recommendation = new Recommendation(
+              body.getProductId(),
+              r.getRecommendationId(),
+              r.getAuthor(),
+              r.getRate(),
+              r.getContent(),
+              null
+          );
+          integration.createRecommendation(recommendation);
+        });
+      }
+
+      if (body.getReviews() != null) {
+        body.getReviews().forEach(r -> {
+          Review review = new Review(
+              body.getProductId(),
+              r.getReviewId(),
+              r.getAuthor(),
+              r.getSubject(),
+              r.getContent(),
+              null
+          );
+          integration.createReview(review);
+        });
+      }
+
+      log.debug(
+          "createCompositeProduct: composite entites created for productId: {}",
+          body.getProductId()
+      );
+    } catch (RuntimeException re) {
+      log.warn("createCompositeProduct failed", re);
+      throw re;
+    }
+  }
+
+  @Override
+  public ProductAggregate getCompositeProduct(int productId) {
+    log.debug("getCompositeProduct: lookup a product aggregate for productId: {}", productId);
+
     Product product = integration.getProduct(productId);
     if (product == null) {
       throw new NotFoundException("No product found for productId: " + productId);
@@ -39,6 +92,19 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
         reviews,
         serviceUtil.getServiceAddress()
     );
+  }
+
+  @Override
+  public void deleteCompositeProduct(int productId) {
+    log.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
+
+    integration.deleteProduct(productId);
+
+    integration.deleteRecommendations(productId);
+
+    integration.deleteReviews(productId);
+
+    log.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
   }
 
   private ProductAggregate createProductAggregate(
@@ -58,14 +124,20 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
                        .map(r -> new RecommendationSummary(
                            r.getRecommendationId(),
                            r.getAuthor(),
-                           r.getRate()
+                           r.getRate(),
+                           r.getContent()
                        ))
                        .collect(Collectors.toList());
 
     // 3. Copy summary review info, if available
     List<ReviewSummary> reviewSummaries = (reviews == null) ? null :
         reviews.stream()
-               .map(r -> new ReviewSummary(r.getReviewId(), r.getAuthor(), r.getSubject()))
+               .map(r -> new ReviewSummary(
+                   r.getReviewId(),
+                   r.getAuthor(),
+                   r.getSubject(),
+                   r.getContent()
+               ))
                .collect(Collectors.toList());
 
     // 4. Create info regarding the involved microservices addresses
