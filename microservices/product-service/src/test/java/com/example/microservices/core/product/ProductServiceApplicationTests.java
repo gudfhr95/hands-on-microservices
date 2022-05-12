@@ -1,6 +1,5 @@
 package com.example.microservices.core.product;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -29,7 +28,7 @@ class ProductServiceApplicationTests {
 
   @BeforeEach
   void setupDb() {
-    repository.deleteAll();
+    repository.deleteAll().block();
   }
 
   @Test
@@ -37,7 +36,6 @@ class ProductServiceApplicationTests {
     int productId = 1;
 
     postAndVerifyProduct(productId, OK);
-    assertThat(repository.findByProductId(productId).isPresent()).isTrue();
 
     getAndVerifyProduct(productId, OK)
         .jsonPath("$.productId").isEqualTo(productId);
@@ -48,7 +46,6 @@ class ProductServiceApplicationTests {
     int productId = 1;
 
     postAndVerifyProduct(productId, OK);
-    assertThat(repository.findByProductId(productId).isPresent()).isTrue();
 
     postAndVerifyProduct(productId, UNPROCESSABLE_ENTITY)
         .jsonPath("$.path").isEqualTo("/product")
@@ -60,10 +57,8 @@ class ProductServiceApplicationTests {
     int productId = 1;
 
     postAndVerifyProduct(productId, OK);
-    assertThat(repository.findByProductId(productId).isPresent()).isTrue();
 
     deleteAndVerifyProduct(productId, OK);
-    assertThat(repository.findByProductId(productId).isPresent()).isFalse();
 
     deleteAndVerifyProduct(productId, OK);
   }
