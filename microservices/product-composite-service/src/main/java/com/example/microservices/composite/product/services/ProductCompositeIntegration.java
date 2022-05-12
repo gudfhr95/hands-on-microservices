@@ -1,6 +1,6 @@
 package com.example.microservices.composite.product.services;
 
-import static org.springframework.http.HttpMethod.GET;
+import static reactor.core.publisher.Flux.empty;
 
 import com.example.api.core.product.Product;
 import com.example.api.core.product.ProductService;
@@ -13,21 +13,21 @@ import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.HttpErrorInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
 public class ProductCompositeIntegration implements ProductService, RecommendationService,
     ReviewService {
 
-  private final RestTemplate restTemplate;
+  private final WebClient webClient;
   private final ObjectMapper mapper;
 
   private final String productServiceUrl;
@@ -35,7 +35,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   private final String reviewServiceUrl;
 
   public ProductCompositeIntegration(
-      RestTemplate restTemplate,
+      WebClient.Builder webClient,
       ObjectMapper mapper,
       @Value("${app.product-service.host}") String productServiceHost,
       @Value("${app.product-service.port}") int productServicePort,
@@ -44,16 +44,13 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
       @Value("${app.review-service.host}") String reviewServiceHost,
       @Value("${app.review-service.port}") int reviewServicePort
   ) {
-    this.restTemplate = restTemplate;
+    this.webClient = webClient.build();
     this.mapper = mapper;
 
-    this.productServiceUrl =
-        "http://" + productServiceHost + ":" + productServicePort + "/product/";
+    this.productServiceUrl = "http://" + productServiceHost + ":" + productServicePort;
     this.recommendationServiceUrl =
-        "http://" + recommendationServiceHost + ":" + recommendationServicePort
-            + "/recommendation";
-    this.reviewServiceUrl =
-        "http://" + reviewServiceHost + ":" + reviewServicePort + "/review";
+        "http://" + recommendationServiceHost + ":" + recommendationServicePort;
+    this.reviewServiceUrl = "http://" + reviewServiceHost + ":" + reviewServicePort;
   }
 
   @Override
@@ -72,18 +69,17 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Product getProduct(int productId) {
-    try {
-      String url = productServiceUrl + "/" + productId;
-      log.debug("Will call the getProduct API on URL: {}", url);
+  public Mono<Product> getProduct(int productId) {
+    String url = productServiceUrl + "/product/" + productId;
 
-      Product product = restTemplate.getForObject(url, Product.class);
-      log.debug("Found a product with id: {}", product.getProductId());
+    log.debug("Will call the getProduct API on URL: {}", url);
 
-      return product;
-    } catch (HttpClientErrorException ex) {
-      throw handleHttpClientException(ex);
-    }
+    return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(Product.class)
+                    .log()
+                    .onErrorMap(WebClientResponseException.class, this::handleException);
   }
 
   @Override
@@ -114,32 +110,18 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public List<Recommendation> getRecommendations(int productId) {
-    try {
-      String url = recommendationServiceUrl + "?productId=" + productId;
-      log.debug("Will call the getRecommendations API on URL: {}", url);
+  public Flux<Recommendation> getRecommendations(int productId) {
+    String url = recommendationServiceUrl + "/recommendation?productId=" + productId;
 
-      List<Recommendation> recommendations = restTemplate.exchange(
-          url,
-          GET,
-          null,
-          new ParameterizedTypeReference<List<Recommendation>>() {
-          }
-      ).getBody();
-      log.debug(
-          "Found {} recommendations for a product with id: {}",
-          recommendations.size(),
-          productId
-      );
+    log.debug("Will call the getRecommendations API on URL: {}", url);
 
-      return recommendations;
-    } catch (Exception ex) {
-      log.warn(
-          "Got an exception while requesting recommendation, return zero recommendations: {}",
-          ex.getMessage()
-      );
-      return new ArrayList<>();
-    }
+    // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
+    return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToFlux(Recommendation.class)
+                    .log()
+                    .onErrorResume(error -> empty());
   }
 
   @Override
@@ -170,28 +152,18 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public List<Review> getReviews(int productId) {
-    try {
-      String url = reviewServiceUrl + "?productId=" + productId;
-      log.debug("Will call the getReviews API on URL: {}", url);
+  public Flux<Review> getReviews(int productId) {
+    String url = reviewServiceUrl + "/review?productId=" + productId;
 
-      List<Review> reviews = restTemplate.exchange(
-          url,
-          GET,
-          null,
-          new ParameterizedTypeReference<List<Review>>() {
-          }
-      ).getBody();
-      log.debug("Found {} reviews for a product with id: {}", reviews.size(), productId);
+    log.debug("Will call the getReviews API on URL: {}", url);
 
-      return reviews;
-    } catch (Exception ex) {
-      log.warn(
-          "Got an exception while requesting reviews, return zero reviews: {}",
-          ex.getMessage()
-      );
-      return new ArrayList<>();
-    }
+    // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
+    return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToFlux(Review.class)
+                    .log()
+                    .onErrorResume(error -> empty());
   }
 
   @Override
@@ -206,22 +178,29 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     }
   }
 
-  private RuntimeException handleHttpClientException(HttpClientErrorException ex) {
-    switch (ex.getStatusCode()) {
+  private Throwable handleException(Throwable ex) {
+    if (!(ex instanceof WebClientResponseException)) {
+      log.warn("Got a unexpected error: {}, will rethrow it", ex.toString());
+      return ex;
+    }
+
+    WebClientResponseException wcre = (WebClientResponseException) ex;
+
+    switch (wcre.getStatusCode()) {
       case NOT_FOUND:
-        return new NotFoundException(getErrorMessage(ex));
+        return new NotFoundException(getErrorMessage(wcre));
 
       case UNPROCESSABLE_ENTITY:
-        return new InvalidInputException(getErrorMessage(ex));
+        return new InvalidInputException(getErrorMessage(wcre));
 
       default:
-        log.warn("Got a unexpected HTTP error: {}, will rethrow it", ex.getStatusCode());
-        log.warn("Error Body: {}", ex.getResponseBodyAsString());
+        log.warn("Got a unexpected HTTP error: {}, will rethrow it", wcre.toString());
+        log.warn("Error Body: {}", wcre.getResponseBodyAsString());
         return ex;
     }
   }
 
-  private String getErrorMessage(HttpClientErrorException ex) {
+  private String getErrorMessage(WebClientResponseException ex) {
     try {
       return mapper.readValue(ex.getResponseBodyAsString(), HttpErrorInfo.class).getMessage();
     } catch (IOException ioex) {
