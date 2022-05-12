@@ -76,6 +76,27 @@ logging:
     root: INFO
     com.example: DEBUG
 
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings:
+    output-products:
+      destination: products
+    output-recommendations:
+      destination: recommendations
+    output-reviews:
+      destination: reviews
+
+spring.rabbitmq:
+  host: 127.0.0.1
+  port: 5672
+  username: guest
+  password: guest
+
+spring.cloud.stream.kafka.binder:
+  brokers: 127.0.0.1
+  defaultBrokerPort: 9092
+
 ---
 spring.config.activate.on-profile: docker
 
@@ -91,3 +112,7 @@ app:
   review-service:
     host: review
     port: 8080
+
+spring.rabbitmq.host: rabbitmq
+
+spring.cloud.stream.kafka.binder.brokers: kafka
