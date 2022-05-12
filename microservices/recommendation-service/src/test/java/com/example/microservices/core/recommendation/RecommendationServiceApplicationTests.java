@@ -1,6 +1,5 @@
 package com.example.microservices.core.recommendation;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -28,7 +27,7 @@ class RecommendationServiceApplicationTests {
 
   @BeforeEach
   void setupDb() {
-    repository.deleteAll();
+    repository.deleteAll().block();
   }
 
   @Test
@@ -38,8 +37,6 @@ class RecommendationServiceApplicationTests {
     postAndVerifyRecommendation(productId, 1, OK);
     postAndVerifyRecommendation(productId, 2, OK);
     postAndVerifyRecommendation(productId, 3, OK);
-
-    assertThat(repository.findByProductId(productId).size()).isEqualTo(3);
 
     getAndVerifyRecommendationsByProductId(productId, OK)
         .jsonPath("$.length()").isEqualTo(3)
@@ -56,13 +53,9 @@ class RecommendationServiceApplicationTests {
         .jsonPath("$.productId").isEqualTo(productId)
         .jsonPath("$.recommendationId").isEqualTo(recommendationId);
 
-    assertThat(repository.count()).isOne();
-
     postAndVerifyRecommendation(productId, recommendationId, UNPROCESSABLE_ENTITY)
         .jsonPath("$.path").isEqualTo("/recommendation")
         .jsonPath("$.message").isEqualTo("Duplicate key, Product Id: 1, Recommendation Id: 1");
-
-    assertThat(repository.count()).isOne();
   }
 
   @Test
@@ -71,10 +64,8 @@ class RecommendationServiceApplicationTests {
     int recommendationId = 1;
 
     postAndVerifyRecommendation(productId, recommendationId, OK);
-    assertThat(repository.findByProductId(productId).size()).isOne();
 
     deleteAndVerifyRecommendationsByProductId(productId, OK);
-    assertThat(repository.findByProductId(productId).size()).isZero();
 
     deleteAndVerifyRecommendationsByProductId(productId, OK);
   }
