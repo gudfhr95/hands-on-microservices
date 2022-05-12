@@ -1,11 +1,11 @@
 package com.example.api.core.recommendation;
 
-import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import reactor.core.publisher.Flux;
 
 public interface RecommendationService {
 
@@ -20,7 +20,7 @@ public interface RecommendationService {
       value = "/recommendation",
       produces = "application/json"
   )
-  List<Recommendation> getRecommendations(
+  Flux<Recommendation> getRecommendations(
       @RequestParam(value = "productId") int productId
   );
 
