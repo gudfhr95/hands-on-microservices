@@ -9,7 +9,8 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 ext {
-    mapstructVersion = "1.4.2.Final"
+    springCloudVersion = '2021.0.2'
+    mapstructVersion = '1.4.2.Final'
 }
 
 repositories {
@@ -22,11 +23,14 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation 'mysql:mysql-connector-java'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-stream-test-support'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'com.h2database:h2'
 
@@ -40,6 +44,12 @@ dependencies {
 
     testAnnotationProcessor 'org.projectlombok:lombok'
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('test') {
