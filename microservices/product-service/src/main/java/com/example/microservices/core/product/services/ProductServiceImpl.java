@@ -32,13 +32,13 @@ public class ProductServiceImpl implements ProductService {
 
     ProductEntity entity = mapper.apiToEntity(body);
     return repository.save(entity)
-                     .log()
-                     .onErrorMap(DuplicateKeyException.class, ex ->
-                         new InvalidInputException(
-                             "Duplicate key, Product Id: " + body.getProductId()
-                         ))
-                     .map(mapper::entityToApi)
-                     .block();
+        .log()
+        .onErrorMap(DuplicateKeyException.class, ex ->
+            new InvalidInputException(
+                "Duplicate key, Product Id: " + body.getProductId()
+            ))
+        .map(mapper::entityToApi)
+        .block();
   }
 
   @Override
@@ -48,15 +48,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     return repository.findByProductId(productId)
-                     .log()
-                     .switchIfEmpty(error(
-                         new NotFoundException("No product found for productId: " + productId)
-                     ))
-                     .map(mapper::entityToApi)
-                     .map(e -> {
-                       e.setServiceAddress(serviceUtil.getServiceAddress());
-                       return e;
-                     });
+        .log()
+        .switchIfEmpty(error(
+            new NotFoundException("No product found for productId: " + productId)
+        ))
+        .map(mapper::entityToApi)
+        .map(e -> {
+          e.setServiceAddress(serviceUtil.getServiceAddress());
+          return e;
+        });
   }
 
   @Override
@@ -68,8 +68,9 @@ public class ProductServiceImpl implements ProductService {
     log.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
 
     repository.findByProductId(productId)
-              .log()
-              .map(repository::delete)
-              .block();
+        .log()
+        .map(repository::delete)
+        .flatMap(e -> e)
+        .block();
   }
 }
