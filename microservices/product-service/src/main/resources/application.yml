@@ -42,6 +42,9 @@ logging:
     com.example.microservices: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
+management.endpoint.health.show-details: always
+management.endpoints.web.exposure.include: "*"
+
 ---
 spring.config.activate.on-profile: docker
 

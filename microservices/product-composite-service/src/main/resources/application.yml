@@ -71,21 +71,22 @@ app:
     host: localhost
     port: 7003
 
-logging:
-  level:
-    root: INFO
-    com.example: DEBUG
-
 spring.cloud.stream:
   defaultBinder: rabbit
   default.contentType: application/json
   bindings:
     output-products:
       destination: products
+      producer:
+        required-groups: auditGroup
     output-recommendations:
       destination: recommendations
+      producer:
+        required-groups: auditGroup
     output-reviews:
       destination: reviews
+      producer:
+        required-groups: auditGroup
 
 spring.rabbitmq:
   host: 127.0.0.1
@@ -96,6 +97,14 @@ spring.rabbitmq:
 spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+
+management.endpoint.health.show-details: always
+management.endpoints.web.exposure.include: "*"
 
 ---
 spring.config.activate.on-profile: docker
