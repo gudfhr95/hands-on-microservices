@@ -1,7 +1,7 @@
-package com.example.microservices.core.product.services;
+package com.example.microservices.core.recommendation.services;
 
-import com.example.api.core.product.Product;
-import com.example.api.core.product.ProductService;
+import com.example.api.core.recommendation.Recommendation;
+import com.example.api.core.recommendation.RecommendationService;
 import com.example.api.event.Event;
 import com.example.util.exceptions.EventProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -15,23 +15,24 @@ import org.springframework.cloud.stream.messaging.Sink;
 @Slf4j
 public class MessageProcessor {
 
-  private final ProductService productService;
+  private final RecommendationService recommendationService;
 
   @StreamListener(target = Sink.INPUT)
-  public void process(Event<Integer, Product> event) {
+  public void process(Event<Integer, Recommendation> event) {
     log.info("Process message created at {}...", event.getEventCreatedAt());
 
     switch (event.getEventType()) {
       case CREATE:
-        Product product = event.getData();
-        log.info("Create product with ID: {}", product.getProductId());
-        productService.createProduct(product);
+        Recommendation recommendation = event.getData();
+        log.info("Create recommendation with ID: {}/{}", recommendation.getProductId(),
+            recommendation.getRecommendationId());
+        recommendationService.createRecommendation(recommendation);
         break;
 
       case DELETE:
         int productId = event.getKey();
-        log.info("Delete product with ProductID: {}", productId);
-        productService.deleteProduct(productId);
+        log.info("Delete recommendations with ProductID: {}", productId);
+        recommendationService.deleteRecommendations(productId);
         break;
 
       default:
