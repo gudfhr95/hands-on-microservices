@@ -27,8 +27,8 @@ spring.cloud.stream:
   defaultBinder: rabbit
   default.contentType: application/json
   bindings.input:
-    destination: reviewss
-    group: reviewssGroup
+    destination: reviews
+    group: reviewsGroup
 
 spring.cloud.stream.bindings.input.consumer:
   maxAttempts: 3
