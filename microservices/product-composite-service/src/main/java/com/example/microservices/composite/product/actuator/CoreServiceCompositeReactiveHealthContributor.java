@@ -27,14 +27,13 @@ public class CoreServiceCompositeReactiveHealthContributor implements
     WebClient webClient = WebClient.builder().build();
 
     contributors.put("product", new CoreServiceHealthContributor(
-        "http://" + productServiceHost + ":" + productServicePort + "/actuator/health", webClient));
+        getActuatorUrl(productServiceHost, productServicePort), webClient));
     contributors.put("recommendation", new CoreServiceHealthContributor(
-        "http://" + recommendationServiceHost + ":" + recommendationServicePort
-            + "/actuator/health", webClient));
+        getActuatorUrl(recommendationServiceHost, recommendationServicePort), webClient));
     contributors.put("review", new CoreServiceHealthContributor(
-        "http://" + reviewServiceHost + ":" + reviewServicePort + "/actuator/health", webClient));
+        getActuatorUrl(reviewServiceHost, reviewServicePort), webClient));
   }
-
+  
   @Override
   public ReactiveHealthContributor getContributor(String name) {
     return contributors.get(name);
@@ -46,5 +45,9 @@ public class CoreServiceCompositeReactiveHealthContributor implements
         .stream()
         .map((entry) -> NamedContributor.of(entry.getKey(), entry.getValue()))
         .iterator();
+  }
+
+  private String getActuatorUrl(String host, int port) {
+    return "http://" + host + ":" + port + "/actuator/health";
   }
 }
