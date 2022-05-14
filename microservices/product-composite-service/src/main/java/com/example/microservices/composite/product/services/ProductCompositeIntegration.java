@@ -16,9 +16,8 @@ import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.HttpErrorInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
@@ -31,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 @EnableBinding(ProductCompositeIntegration.MessageSources.class)
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class ProductCompositeIntegration implements ProductService, RecommendationService,
     ReviewService {
@@ -51,35 +51,15 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     MessageChannel outputReviews();
   }
 
-  private final WebClient webClient;
+  private final String productServiceUrl = "http://product";
+  private final String recommendationServiceUrl = "http://recommendation";
+  private final String reviewServiceUrl = "http://review";
+
+  private final WebClient.Builder webClientBuilder;
   private final ObjectMapper mapper;
-
-  private final String productServiceUrl;
-  private final String recommendationServiceUrl;
-  private final String reviewServiceUrl;
-
   private final MessageSources messageSources;
 
-  public ProductCompositeIntegration(
-      WebClient.Builder webClient,
-      ObjectMapper mapper,
-      MessageSources messageSources,
-      @Value("${app.product-service.host}") String productServiceHost,
-      @Value("${app.product-service.port}") int productServicePort,
-      @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-      @Value("${app.recommendation-service.port}") int recommendationServicePort,
-      @Value("${app.review-service.host}") String reviewServiceHost,
-      @Value("${app.review-service.port}") int reviewServicePort
-  ) {
-    this.webClient = webClient.build();
-    this.mapper = mapper;
-    this.messageSources = messageSources;
-
-    this.productServiceUrl = "http://" + productServiceHost + ":" + productServicePort;
-    this.recommendationServiceUrl =
-        "http://" + recommendationServiceHost + ":" + recommendationServicePort;
-    this.reviewServiceUrl = "http://" + reviewServiceHost + ":" + reviewServicePort;
-  }
+  private WebClient webClient;
 
   @Override
   public Product createProduct(Product body) {
@@ -95,7 +75,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     log.debug("Will call the getProduct API on URL: {}", url);
 
-    return webClient.get()
+    return getWebClient().get()
         .uri(url)
         .retrieve()
         .bodyToMono(Product.class)
@@ -124,7 +104,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     log.debug("Will call the getRecommendations API on URL: {}", url);
 
     // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
-    return webClient.get()
+    return getWebClient().get()
         .uri(url)
         .retrieve()
         .bodyToFlux(Recommendation.class)
@@ -153,7 +133,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     log.debug("Will call the getReviews API on URL: {}", url);
 
     // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
-    return webClient.get()
+    return getWebClient().get()
         .uri(url)
         .retrieve()
         .bodyToFlux(Review.class)
@@ -167,30 +147,11 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
         .send(MessageBuilder.withPayload(new Event(DELETE, productId, null)).build());
   }
 
-  public Mono<Health> getProductHealth() {
-    return getHealth(productServiceUrl);
-  }
-
-  public Mono<Health> getRecommendationHealth() {
-    return getHealth(recommendationServiceUrl);
-  }
-
-  public Mono<Health> getReviewHealth() {
-    return getHealth(reviewServiceUrl);
-  }
-
-  private Mono<Health> getHealth(String url) {
-    url += "/actuator/health";
-
-    log.debug("Will call the Health API on URL: {}", url);
-
-    return webClient.get()
-        .uri(url)
-        .retrieve()
-        .bodyToMono(String.class)
-        .map(s -> new Health.Builder().up().build())
-        .onErrorResume(ex -> Mono.just(new Health.Builder().down(ex).build()))
-        .log();
+  private WebClient getWebClient() {
+    if (webClient == null) {
+      webClient = webClientBuilder.build();
+    }
+    return webClient;
   }
 
   private Throwable handleException(Throwable ex) {

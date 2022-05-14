@@ -3,7 +3,6 @@ package com.example.microservices.composite.product.actuator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.CompositeReactiveHealthContributor;
 import org.springframework.boot.actuate.health.NamedContributor;
 import org.springframework.boot.actuate.health.ReactiveHealthContributor;
@@ -14,26 +13,23 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class CoreServiceCompositeReactiveHealthContributor implements
     CompositeReactiveHealthContributor {
 
+  private final String productServiceUrl = "http://product";
+  private final String recommendationServiceUrl = "http://recommendation";
+  private final String reviewServiceUrl = "http://review";
+
   private final Map<String, ReactiveHealthContributor> contributors = new LinkedHashMap<>();
 
-  public CoreServiceCompositeReactiveHealthContributor(
-      @Value("${app.product-service.host}") String productServiceHost,
-      @Value("${app.product-service.port}") int productServicePort,
-      @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-      @Value("${app.recommendation-service.port}") int recommendationServicePort,
-      @Value("${app.review-service.host}") String reviewServiceHost,
-      @Value("${app.review-service.port}") int reviewServicePort
-  ) {
-    WebClient webClient = WebClient.builder().build();
+  public CoreServiceCompositeReactiveHealthContributor(WebClient.Builder webClientBuilder) {
+    WebClient webClient = webClientBuilder.build();
 
-    contributors.put("product", new CoreServiceHealthContributor(
-        getActuatorUrl(productServiceHost, productServicePort), webClient));
-    contributors.put("recommendation", new CoreServiceHealthContributor(
-        getActuatorUrl(recommendationServiceHost, recommendationServicePort), webClient));
-    contributors.put("review", new CoreServiceHealthContributor(
-        getActuatorUrl(reviewServiceHost, reviewServicePort), webClient));
+    contributors.put("product",
+        new CoreServiceHealthContributor(getActuatorUrl(productServiceUrl), webClient));
+    contributors.put("recommendation",
+        new CoreServiceHealthContributor(getActuatorUrl(recommendationServiceUrl), webClient));
+    contributors.put("review",
+        new CoreServiceHealthContributor(getActuatorUrl(reviewServiceUrl), webClient));
   }
-  
+
   @Override
   public ReactiveHealthContributor getContributor(String name) {
     return contributors.get(name);
@@ -47,7 +43,7 @@ public class CoreServiceCompositeReactiveHealthContributor implements
         .iterator();
   }
 
-  private String getActuatorUrl(String host, int port) {
-    return "http://" + host + ":" + port + "/actuator/health";
+  private String getActuatorUrl(String host) {
+    return host + "/actuator/health";
   }
 }

@@ -94,11 +94,11 @@ class ProductCompositeServiceApplicationTests {
       HttpStatus expectedStatus
   ) {
     return client.get()
-                 .uri("/product-composite/" + productId)
-                 .accept(APPLICATION_JSON)
-                 .exchange()
-                 .expectStatus().isEqualTo(expectedStatus)
-                 .expectHeader().contentType(APPLICATION_JSON)
-                 .expectBody();
+        .uri("/product-composite/" + productId)
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(expectedStatus)
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody();
   }
 }
