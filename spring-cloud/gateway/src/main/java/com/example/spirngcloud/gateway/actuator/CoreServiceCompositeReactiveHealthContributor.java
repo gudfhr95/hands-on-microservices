@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class CoreServiceCompositeReactiveHealthContributor implements
     CompositeReactiveHealthContributor {
 
+  private final String authServerUrl = "http://auth-server";
   private final String productServiceUrl = "http://product";
   private final String recommendationServiceUrl = "http://recommendation";
   private final String reviewServiceUrl = "http://review";
@@ -23,6 +24,8 @@ public class CoreServiceCompositeReactiveHealthContributor implements
   public CoreServiceCompositeReactiveHealthContributor(WebClient.Builder webClientBuilder) {
     WebClient webClient = webClientBuilder.build();
 
+    contributors.put("auth-server",
+        new CoreServiceHealthContributor(getActuatorUrl(authServerUrl), webClient));
     contributors.put("product",
         new CoreServiceHealthContributor(getActuatorUrl(productServiceUrl), webClient));
     contributors.put("recommendation",

@@ -19,6 +19,11 @@ ribbon.ServerListRefreshInterval: 5000
 ribbon.NFLoadBalancerPingInterval: 5
 
 spring.cloud.gateway.routes:
+  - id: oauth-server
+      uri: lb://auth-server
+      predicates:
+        - Path=/oauth/**
+
   - id: product-composite
     uri: lb://product-composite
     predicates:
