@@ -1,4 +1,4 @@
-package com.example.microservices.composite.product.actuator;
+package com.example.spirngcloud.gateway.actuator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

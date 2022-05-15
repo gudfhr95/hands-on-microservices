@@ -1,4 +1,4 @@
-package com.example.microservices.composite.product.actuator;
+package com.example.spirngcloud.gateway.actuator;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -16,6 +16,7 @@ public class CoreServiceCompositeReactiveHealthContributor implements
   private final String productServiceUrl = "http://product";
   private final String recommendationServiceUrl = "http://recommendation";
   private final String reviewServiceUrl = "http://review";
+  private final String productCompositeServiceUrl = "http://product-composite";
 
   private final Map<String, ReactiveHealthContributor> contributors = new LinkedHashMap<>();
 
@@ -28,6 +29,8 @@ public class CoreServiceCompositeReactiveHealthContributor implements
         new CoreServiceHealthContributor(getActuatorUrl(recommendationServiceUrl), webClient));
     contributors.put("review",
         new CoreServiceHealthContributor(getActuatorUrl(reviewServiceUrl), webClient));
+    contributors.put("product-composite",
+        new CoreServiceHealthContributor(getActuatorUrl(productCompositeServiceUrl), webClient));
   }
 
   @Override
