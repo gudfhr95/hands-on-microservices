@@ -21,6 +21,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
     implementation "com.nimbusds:nimbus-jose-jwt:${joseJwtVersion}"
 
