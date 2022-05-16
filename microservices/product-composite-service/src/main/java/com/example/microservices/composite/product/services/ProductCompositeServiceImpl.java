@@ -9,10 +9,16 @@ import com.example.api.core.product.Product;
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
 import com.example.util.http.ServiceUtil;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -21,12 +27,22 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ProductCompositeServiceImpl implements ProductCompositeService {
 
+  private final SecurityContext nullSC = new SecurityContextImpl();
+
   private final ProductCompositeIntegration integration;
   private final ServiceUtil serviceUtil;
 
   @Override
-  public void createCompositeProduct(ProductAggregate body) {
+  public Mono<Void> createCompositeProduct(ProductAggregate body) {
+    return ReactiveSecurityContextHolder.getContext()
+        .doOnSuccess(sc -> internalCreateCompositeProduct(sc, body))
+        .then();
+  }
+
+  private void internalCreateCompositeProduct(SecurityContext sc, ProductAggregate body) {
     try {
+      logAuthorizationInfo(sc);
+
       log.debug(
           "createCompositeProduct: creates a new composite entity for productId: {}",
           body.getProductId()
@@ -76,39 +92,55 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
   @Override
   public Mono<ProductAggregate> getCompositeProduct(int productId) {
     return Mono.zip(
-                   values -> createProductAggregate(
-                       (Product) values[0],
-                       (List<Recommendation>) values[1],
-                       (List<Review>) values[2],
-                       serviceUtil.getServiceAddress()
-                   ),
-                   integration.getProduct(productId),
-                   integration.getRecommendations(productId).collectList(),
-                   integration.getReviews(productId).collectList()
-               )
-               .doOnError(ex -> log.warn("getCompositeProduct failed: {}", ex.toString()))
-               .log();
+            values -> createProductAggregate(
+                (SecurityContext) values[0],
+                (Product) values[1],
+                (List<Recommendation>) values[2],
+                (List<Review>) values[3],
+                serviceUtil.getServiceAddress()
+            ),
+            ReactiveSecurityContextHolder.getContext().defaultIfEmpty(nullSC),
+            integration.getProduct(productId),
+            integration.getRecommendations(productId).collectList(),
+            integration.getReviews(productId).collectList()
+        )
+        .doOnError(ex -> log.warn("getCompositeProduct failed: {}", ex.toString()))
+        .log();
   }
 
   @Override
-  public void deleteCompositeProduct(int productId) {
-    log.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
+  public Mono<Void> deleteCompositeProduct(int productId) {
+    return ReactiveSecurityContextHolder.getContext()
+        .doOnSuccess(sc -> internalDeleteCompositeProduct(sc, productId))
+        .then();
+  }
 
-    integration.deleteProduct(productId);
+  private void internalDeleteCompositeProduct(SecurityContext sc, int productId) {
+    try {
+      logAuthorizationInfo(sc);
 
-    integration.deleteRecommendations(productId);
+      log.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
 
-    integration.deleteReviews(productId);
+      integration.deleteProduct(productId);
+      integration.deleteRecommendations(productId);
+      integration.deleteReviews(productId);
 
-    log.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
+      log.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
+    } catch (RuntimeException re) {
+      log.warn("deleteCompositeProduct failed: {}", re.toString());
+      throw re;
+    }
   }
 
   private ProductAggregate createProductAggregate(
+      SecurityContext sc,
       Product product,
       List<Recommendation> recommendations,
       List<Review> reviews,
       String serviceAddress
   ) {
+    logAuthorizationInfo(sc);
+
     // 1. Setup product info
     int productId = product.getProductId();
     String name = product.getName();
@@ -117,24 +149,24 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
     // 2. Copy summary recommendation info, if available
     List<RecommendationSummary> recommendationSummaries = (recommendations == null) ? null :
         recommendations.stream()
-                       .map(r -> new RecommendationSummary(
-                           r.getRecommendationId(),
-                           r.getAuthor(),
-                           r.getRate(),
-                           r.getContent()
-                       ))
-                       .collect(Collectors.toList());
+            .map(r -> new RecommendationSummary(
+                r.getRecommendationId(),
+                r.getAuthor(),
+                r.getRate(),
+                r.getContent()
+            ))
+            .collect(Collectors.toList());
 
     // 3. Copy summary review info, if available
     List<ReviewSummary> reviewSummaries = (reviews == null) ? null :
         reviews.stream()
-               .map(r -> new ReviewSummary(
-                   r.getReviewId(),
-                   r.getAuthor(),
-                   r.getSubject(),
-                   r.getContent()
-               ))
-               .collect(Collectors.toList());
+            .map(r -> new ReviewSummary(
+                r.getReviewId(),
+                r.getAuthor(),
+                r.getSubject(),
+                r.getContent()
+            ))
+            .collect(Collectors.toList());
 
     // 4. Create info regarding the involved microservices addresses
     String productAddress = product.getServiceAddress();
@@ -157,5 +189,33 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
         reviewSummaries,
         serviceAddresses
     );
+  }
+
+  private void logAuthorizationInfo(SecurityContext sc) {
+    if (sc != null && sc.getAuthentication() != null
+        && sc.getAuthentication() instanceof JwtAuthenticationToken) {
+      Jwt jwtToken = ((JwtAuthenticationToken) sc.getAuthentication()).getToken();
+      logAuthorizationInfo(jwtToken);
+    } else {
+      log.warn("No JWT based Authentication supplied, running tests are we?");
+    }
+  }
+
+  private void logAuthorizationInfo(Jwt jwt) {
+    if (jwt == null) {
+      log.warn("No JWT supplied, running tests are we?");
+    } else {
+      if (log.isDebugEnabled()) {
+        URL issuer = jwt.getIssuer();
+        List<String> audience = jwt.getAudience();
+        Object subject = jwt.getClaims().get("sub");
+        Object scopes = jwt.getClaims().get("scope");
+        Object expires = jwt.getClaims().get("exp");
+
+        log.debug(
+            "Authorization info: Subject: {}, scopes: {}, expires: {}, issuer: {}, audience: {}",
+            subject, scopes, expires, issuer, audience);
+      }
+    }
   }
 }
