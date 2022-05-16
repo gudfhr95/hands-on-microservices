@@ -12,6 +12,7 @@ app:
   eureka-username: u
   eureka-password: p
   eureka-server: localhost
+  auth-server: localhost
 
 eureka:
   client:
@@ -57,6 +58,8 @@ spring.cloud.gateway.routes:
     predicates:
       - Path=/eureka/**
 
+spring.security.oauth2.resourceserver.jwt.jwt-set-uri: http://${app.auth-server}:9999/.well-known/jwks.json
+
 logging:
   level:
     root: INFO
@@ -69,4 +72,6 @@ management.endpoints.web.exposure.include: "*"
 ---
 spring.config.activate.on-profile: docker
 
-app.eureka-server: eureka
+app:
+  eureka-server: eureka
+  auth-server: auth-server
