@@ -58,6 +58,13 @@ spring.cloud.gateway.routes:
     predicates:
       - Path=/eureka/**
 
+  - id: config-server
+    uri: http://${app.config-server}:8888
+    predicates:
+      - Path=/config/**
+    filters:
+      - RewritePath=/config/(?<segment>.*), /$\{segment}
+
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}:9999/.well-known/jwks.json
 
 logging:
