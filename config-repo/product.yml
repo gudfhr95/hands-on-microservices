@@ -3,21 +3,6 @@ server.error.include-message: always
 
 spring.application.name: product
 
-app:
-  eureka-username: u
-  eureka-password: p
-  eureka-server: localhost
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
-
 spring.data.mongodb:
   host: localhost
   port: 27017
@@ -59,18 +44,9 @@ logging:
     com.example.microservices: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
-management.endpoint.health.show-details: always
-management.endpoints.web.exposure.include: "*"
-
 ---
 spring.config.activate.on-profile: docker
 
 server.port: 8080
 
-app.eureka-server: eureka
-
 spring.data.mongodb.host: mongodb
-
-spring.rabbitmq.host: rabbitmq
-
-spring.cloud.stream.kafka.binder.brokers: kafka

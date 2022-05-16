@@ -60,24 +60,6 @@ api:
 server.port: 7000
 server.error.include-message: always
 
-spring.application.name: product-composite
-
-app:
-  eureka-username: u
-  eureka-password: p
-  eureka-server: localhost
-  auth-server: localhost
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${app.eureka-username}:${app.eureka-password}@${app.eureka-server}:8761/eureka/
-    initialInstanceInfoReplicationIntervalSeconds: 5
-    registryFetchIntervalSeconds: 5
-  instance:
-    leaseRenewalIntervalInSeconds: 5
-    leaseExpirationDurationInSeconds: 5
-
 ribbon.ServerListRefreshInterval: 5000
 
 ribbon.NFLoadBalancerPingInterval: 5
@@ -99,16 +81,6 @@ spring.cloud.stream:
       producer:
         required-groups: auditGroup
 
-spring.rabbitmq:
-  host: 127.0.0.1
-  port: 5672
-  username: guest
-  password: guest
-
-spring.cloud.stream.kafka.binder:
-  brokers: 127.0.0.1
-  defaultBrokerPort: 9092
-
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}:9999/.well-known/jwks.json
 
 logging:
@@ -116,18 +88,7 @@ logging:
     root: INFO
     com.example: DEBUG
 
-management.endpoint.health.show-details: always
-management.endpoints.web.exposure.include: "*"
-
 ---
 spring.config.activate.on-profile: docker
 
 server.port: 8080
-
-app:
-  eureka-server: eureka
-  auth-server: auth-server
-
-spring.rabbitmq.host: rabbitmq
-
-spring.cloud.stream.kafka.binder.brokers: kafka
