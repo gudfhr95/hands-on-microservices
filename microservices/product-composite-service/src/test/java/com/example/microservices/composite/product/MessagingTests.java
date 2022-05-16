@@ -33,7 +33,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class},
-    properties = {"spring.main.allow-bean-definition-overriding=true"}
+    properties = {
+        "spring.main.allow-bean-definition-overriding=true",
+        "spring.cloud.config.enabled=false"
+    }
 )
 class MessagingTests {
 
