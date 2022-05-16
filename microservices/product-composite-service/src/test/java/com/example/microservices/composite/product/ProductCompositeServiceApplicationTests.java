@@ -24,7 +24,11 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = RANDOM_PORT,
+    classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class},
+    properties = {"spring.main.allow-bean-definition-overriding=true"}
+)
 class ProductCompositeServiceApplicationTests {
 
   private static final int PRODUCT_ID_OK = 1;
