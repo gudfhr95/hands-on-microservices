@@ -7,3 +7,5 @@ spring:
       auto-index-creation: true
 
 spring.mongodb.embedded.version: 5.0.6
+
+spring.cloud.config.enabled: false
