@@ -16,6 +16,7 @@ import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.HttpErrorInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.annotation.EnableBinding;
@@ -25,6 +26,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -70,8 +72,10 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   }
 
   @Override
-  public Mono<Product> getProduct(int productId) {
-    String url = productServiceUrl + "/product/" + productId;
+  public Mono<Product> getProduct(int productId, int delay, int faultPercent) {
+    URI url = UriComponentsBuilder.fromUriString(
+            productServiceUrl + "/product/{productId}?delay={delay}&faultPercent={faultPercent}")
+        .build(productId, delay, faultPercent);
 
     log.debug("Will call the getProduct API on URL: {}", url);
 

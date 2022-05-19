@@ -90,7 +90,7 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
   }
 
   @Override
-  public Mono<ProductAggregate> getCompositeProduct(int productId) {
+  public Mono<ProductAggregate> getCompositeProduct(int productId, int delay, int faultPercent) {
     return Mono.zip(
             values -> createProductAggregate(
                 (SecurityContext) values[0],
@@ -100,7 +100,7 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
                 serviceUtil.getServiceAddress()
             ),
             ReactiveSecurityContextHolder.getContext().defaultIfEmpty(nullSC),
-            integration.getProduct(productId),
+            integration.getProduct(productId, delay, faultPercent),
             integration.getRecommendations(productId).collectList(),
             integration.getReviews(productId).collectList()
         )
