@@ -12,6 +12,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - my-network
 
   recommendation:
     build: microservices/recommendation-service
@@ -24,6 +26,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - my-network
 
   review:
     build: microservices/review-service
@@ -36,6 +40,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - my-network
 
   product-composite:
     build: microservices/product-composite-service
@@ -46,6 +52,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    networks:
+      - my-network
 
   eureka:
     environment:
@@ -53,6 +61,8 @@ services:
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     build: spring-cloud/eureka-server
+    networks:
+      - my-network
 
   gateway:
     environment:
@@ -64,6 +74,8 @@ services:
     build: spring-cloud/gateway
     ports:
       - "8443:8443"
+    networks:
+      - my-network
 
   auth-server:
     environment:
@@ -71,6 +83,8 @@ services:
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     build: spring-cloud/authorization-server
+    networks:
+      - my-network
 
   config-server:
     environment:
@@ -81,6 +95,8 @@ services:
     volumes:
       - $PWD/config-repo:/config-repo
     build: spring-cloud/config-server
+    networks:
+      - my-network
 
   mongodb:
     image: mongo:5.0.6
@@ -91,6 +107,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - my-network
 
   mysql:
     image: mysql:5.7
@@ -106,6 +124,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - my-network
 
   rabbitmq:
     image: rabbitmq:3.9-management
@@ -117,3 +137,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    name: my-network

@@ -35,7 +35,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
     classes = {ProductCompositeServiceApplication.class, TestSecurityConfig.class},
     properties = {
         "spring.main.allow-bean-definition-overriding=true",
-        "spring.cloud.config.enabled=false"
+        "spring.cloud.config.enabled=false",
     }
 )
 class MessagingTests {

@@ -8,7 +8,9 @@ import com.example.api.composite.product.ServiceAddress;
 import com.example.api.core.product.Product;
 import com.example.api.core.recommendation.Recommendation;
 import com.example.api.core.review.Review;
+import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.ServiceUtil;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,7 +102,8 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
                 serviceUtil.getServiceAddress()
             ),
             ReactiveSecurityContextHolder.getContext().defaultIfEmpty(nullSC),
-            integration.getProduct(productId, delay, faultPercent),
+            integration.getProduct(productId, delay, faultPercent)
+                .onErrorReturn(CallNotPermittedException.class, getProductFallbackValue(productId)),
             integration.getRecommendations(productId).collectList(),
             integration.getReviews(productId).collectList()
         )
@@ -130,6 +133,21 @@ public class ProductCompositeServiceImpl implements ProductCompositeService {
       log.warn("deleteCompositeProduct failed: {}", re.toString());
       throw re;
     }
+  }
+
+  private Product getProductFallbackValue(int productId) {
+    log.warn("Creating a fallback product for productId ={}", productId);
+
+    if (productId == 13) {
+      String errMsg = "Product Id: " + productId + " not found in fallback cache!";
+
+      log.warn(errMsg);
+
+      throw new NotFoundException(errMsg);
+    }
+
+    return new Product(productId, "Fallback product " + productId, productId,
+        serviceUtil.getServiceAddress());
   }
 
   private ProductAggregate createProductAggregate(

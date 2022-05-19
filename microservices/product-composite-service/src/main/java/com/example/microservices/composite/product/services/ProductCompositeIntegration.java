@@ -15,16 +15,20 @@ import com.example.util.exceptions.InvalidInputException;
 import com.example.util.exceptions.NotFoundException;
 import com.example.util.http.HttpErrorInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.io.IOException;
 import java.net.URI;
-import lombok.RequiredArgsConstructor;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -32,7 +36,6 @@ import reactor.core.publisher.Mono;
 
 @EnableBinding(ProductCompositeIntegration.MessageSources.class)
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class ProductCompositeIntegration implements ProductService, RecommendationService,
     ReviewService {
@@ -57,9 +60,23 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
   private final String recommendationServiceUrl = "http://recommendation";
   private final String reviewServiceUrl = "http://review";
 
+
   private final WebClient.Builder webClientBuilder;
   private final ObjectMapper mapper;
   private final MessageSources messageSources;
+  private final int productServiceTimeoutSec;
+
+  public ProductCompositeIntegration(
+      Builder webClientBuilder,
+      ObjectMapper mapper,
+      MessageSources messageSources,
+      @Value("${app.product-service.timeoutSec}") int productServiceTimeoutSec
+  ) {
+    this.webClientBuilder = webClientBuilder;
+    this.mapper = mapper;
+    this.messageSources = messageSources;
+    this.productServiceTimeoutSec = productServiceTimeoutSec;
+  }
 
   private WebClient webClient;
 
@@ -71,6 +88,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     return body;
   }
 
+  @Retry(name = "product")
+  @CircuitBreaker(name = "product")
   @Override
   public Mono<Product> getProduct(int productId, int delay, int faultPercent) {
     URI url = UriComponentsBuilder.fromUriString(
@@ -84,7 +103,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
         .retrieve()
         .bodyToMono(Product.class)
         .log()
-        .onErrorMap(WebClientResponseException.class, this::handleException);
+        .onErrorMap(WebClientResponseException.class, this::handleException)
+        .timeout(Duration.ofSeconds(productServiceTimeoutSec));
   }
 
   @Override
