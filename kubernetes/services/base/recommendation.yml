@@ -32,7 +32,7 @@ spec:
               scheme: HTTP
               path: /actuator/info
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 20
@@ -42,7 +42,7 @@ spec:
               scheme: HTTP
               path: /actuator/health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 3

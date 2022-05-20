@@ -39,3 +39,13 @@ logging:
 spring.config.activate.on-profile: docker
 
 app.config-server: config-server
+
+---
+spring.profiles: prod
+
+logging:
+  level:
+    root: WARN
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: WARN
+    org.springframework.cloud.gateway: WARN
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN

@@ -36,3 +36,9 @@ spring.cloud.stream.defaultBinder: kafka
 spring.kafka.bootstrap-servers: kafka:9092
 spring.zipkin.sender.type: kafka
 management.health.rabbit.enabled: false
+
+---
+spring.config.active.on-profile: prod
+spring.rabbitmq.host: 172.17.0.1
+
+management.endpoints.web.exposure.include: health,info,circuitbreakerevents
