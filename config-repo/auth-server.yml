@@ -1,1 +1,6 @@
 server.port: 9999
+  
+  ___
+spring.config.active.on-profile: docker
+
+server.port: 80
