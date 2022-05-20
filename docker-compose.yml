@@ -140,6 +140,19 @@ services:
     networks:
       - my-network
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    environment:
+      - STORAGE_TYPE=mem
+      - RABBIT_URI=amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "9411:9411"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - my-network
+
 networks:
   my-network:
     name: my-network

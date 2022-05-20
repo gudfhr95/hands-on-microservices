@@ -18,14 +18,16 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
+    implementation "com.nimbusds:nimbus-jose-jwt:${joseJwtVersion}"
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
-    implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
-    implementation "com.nimbusds:nimbus-jose-jwt:${joseJwtVersion}"
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
+    implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

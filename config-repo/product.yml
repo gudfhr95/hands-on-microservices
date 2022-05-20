@@ -28,12 +28,6 @@ spring.cloud.stream.rabbit.bindings.input.consumer:
 spring.cloud.stream.kafka.bindings.input.consumer:
   enableDlq: true
 
-spring.rabbitmq:
-  host: 127.0.0.1
-  port: 5672
-  username: guest
-  password: guest
-
 spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
