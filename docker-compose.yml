@@ -3,6 +3,7 @@ version: "3.9"
 services:
   product:
     build: microservices/product-service
+    image: hands-on/product-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
@@ -17,6 +18,7 @@ services:
 
   recommendation:
     build: microservices/recommendation-service
+    image: hands-on/recommendation-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
@@ -31,6 +33,7 @@ services:
 
   review:
     build: microservices/review-service
+    image: hands-on/review-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
@@ -45,6 +48,7 @@ services:
 
   product-composite:
     build: microservices/product-composite-service
+    image: hands-on/product-composite-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
@@ -55,38 +59,33 @@ services:
     networks:
       - my-network
 
-  eureka:
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
-      - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
-    build: spring-cloud/eureka-server
-    networks:
-      - my-network
-
   gateway:
+    build: spring-cloud/gateway
+    image: hands-on/gateway
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
     volumes:
       - $PWD/keystore:/keystore
-    build: spring-cloud/gateway
     ports:
       - "8443:8443"
     networks:
       - my-network
 
   auth-server:
+    build: spring-cloud/authorization-server
+    image: hands-on/auth-server
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_USR=${CONFIG_SERVER_USR}
       - CONFIG_SERVER_PWD=${CONFIG_SERVER_PWD}
-    build: spring-cloud/authorization-server
     networks:
       - my-network
 
   config-server:
+    build: spring-cloud/config-server
+    image: hands-on/config-server
     environment:
       - SPRING_PROFILES_ACTIVE=docker,native
       - ENCRYPT_KEY=${CONFIG_SERVER_ENCRYPT_KEY}
@@ -94,7 +93,6 @@ services:
       - SPRING_SECURITY_USER_PASSWORD=${CONFIG_SERVER_PWD}
     volumes:
       - $PWD/config-repo:/config-repo
-    build: spring-cloud/config-server
     networks:
       - my-network
 
