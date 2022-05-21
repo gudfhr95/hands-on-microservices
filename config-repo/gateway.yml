@@ -19,13 +19,6 @@ spring.cloud.gateway.routes:
     predicates:
       - Path=/product-composite/**
 
-  - id: config-server
-    uri: http://${app.config-server}:8888
-    predicates:
-      - Path=/config/**
-    filters:
-      - RewritePath=/config/(?<segment>.*), /$\{segment}
-
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}:9999/.well-known/jwks.json
 
 logging:
@@ -34,11 +27,6 @@ logging:
     org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
     org.springframework.cloud.gateway: TRACE
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
-
----
-spring.config.activate.on-profile: docker
-
-app.config-server: config-server
 
 ---
 spring.profiles: prod

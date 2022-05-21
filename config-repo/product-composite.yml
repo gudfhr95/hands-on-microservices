@@ -112,6 +112,7 @@ logging:
   level:
     root: INFO
     com.example: DEBUG
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
 
 ---
 spring.config.activate.on-profile: docker
