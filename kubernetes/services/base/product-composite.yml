@@ -12,7 +12,6 @@ spec:
       labels:
         app: product-composite
     spec:
-      serviceAccountName: default
       containers:
         - name: comp
           image: hands-on/product-composite-service
@@ -35,7 +34,7 @@ spec:
               scheme: HTTP
               path: /actuator/info
               port: 80
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 20
@@ -45,7 +44,7 @@ spec:
               scheme: HTTP
               path: /actuator/health
               port: 80
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 3
