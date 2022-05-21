@@ -27,6 +27,9 @@ spring.rabbitmq.host: rabbitmq
 
 spring.cloud.stream.kafka.binder.brokers: kafka
 
+app:
+  auth-server: auth-server
+
 ---
 spring.config.active.on-profile: kafka
 

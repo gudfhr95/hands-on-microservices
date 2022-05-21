@@ -15,13 +15,16 @@ spec:
       containers:
         - name: rabbitmq
           image: rabbitmq:3.9-management
+          envFrom:
+            - secretRef:
+                name: rabbitmq-server-credentials
           ports:
             - containerPort: 5671
             - containerPort: 5672
             - containerPort: 15672
           resources:
             limits:
-              memory: 512Mi
+              memory: 1024Mi
           readinessProbe:
             httpGet:
               scheme: HTTP
@@ -29,11 +32,12 @@ spec:
               port: 15672
               httpHeaders:
                 - name: Authorization
-                  value: Basic Z3Vlc3Q6Z3Vlc3Q=
+                  value: Basic cmFiYml0LXVzZXItZGV2OnJhYmJpdC1wd2QtZGV2
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 20
+
 ---
 apiVersion: v1
 kind: Service

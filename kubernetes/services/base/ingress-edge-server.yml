@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: edge
+spec:
+  tls:
+    - hosts:
+        - minikube.me
+      secretName: tls-certificate
+  rules:
+    - host: minikube.me
+      http:
+        paths:
+          - path: /oauth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-server
+                port:
+                  number: 80
+          - path: /product-composite
+            pathType: Prefix
+            backend:
+              service:
+                name: product-composite
+                port:
+                  number: 80
+          - path: /actuator/health
+            pathType: Prefix
+            backend:
+              service:
+                name: product-composite
+                port:
+                  number: 80

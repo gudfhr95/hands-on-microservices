@@ -12,6 +12,7 @@ spec:
       labels:
         app: auth-server
     spec:
+      serviceAccountName: default
       containers:
         - name: auth-server
           image: hands-on/auth-server
@@ -28,13 +29,13 @@ spec:
             - containerPort: 80
           resources:
             limits:
-              memory: 350Mi
+              memory: 1024Mi
           livenessProbe:
             httpGet:
               scheme: HTTP
               path: /actuator/info
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 20
@@ -44,7 +45,7 @@ spec:
               scheme: HTTP
               path: /actuator/health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 3
