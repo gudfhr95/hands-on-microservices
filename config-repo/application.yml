@@ -17,6 +17,7 @@ spring:
       address: "${spring.rabbitmq.host}:${spring.rabbitmq.port}"
       queue: zipkin
 
+management.server.port: 4004
 management.endpoint.health.show-details: always
 management.endpoints.web.exposure.include: "*"
 

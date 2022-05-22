@@ -28,6 +28,8 @@ logging:
     org.springframework.cloud.gateway: TRACE
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
 
+management.server.port: 8443
+
 ---
 spring.profiles: prod
 

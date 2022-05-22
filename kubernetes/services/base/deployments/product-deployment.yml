@@ -1,49 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-composite
+  name: product
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-composite
+      app: product
   template:
     metadata:
       labels:
-        app: product-composite
+        app: product
+        version: latest
     spec:
       containers:
-        - name: comp
-          image: hands-on/product-composite-service
+        - name: pro
+          image: hands-on/product-service
           imagePullPolicy: Never
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
             - name: SPRING_CONFIG_LOCATION
-              value: file:/config-repo/application.yml,file:/config-repo/product-composite.yml
+              value: file:/config-repo/application.yml,file:/config-repo/product.yml
           envFrom:
             - secretRef:
                 name: rabbitmq-credentials
+            - secretRef:
+                name: mongodb-credentials
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: 1024Mi
+              memory: 1Gi
           livenessProbe:
             httpGet:
               scheme: HTTP
               path: /actuator/info
-              port: 80
+              port: 4004
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
-            failureThreshold: 20
+            failureThreshold: 30
             successThreshold: 1
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /actuator/health
-              port: 80
+              port: 4004
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
@@ -55,16 +58,4 @@ spec:
       volumes:
         - name: config-repo-volume
           configMap:
-            name: config-repo-product-composite
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: product-composite
-spec:
-  selector:
-    app: product-composite
-  ports:
-    - port: 80
-      targetPort: 80
+            name: config-repo-product

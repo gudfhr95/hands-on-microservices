@@ -1,51 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: review
+  name: recommendation
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: review
+      app: recommendation
   template:
     metadata:
       labels:
-        app: review
+        app: recommendation
+        version: latest
     spec:
       containers:
-        - name: rev
-          image: hands-on/review-service
+        - name: rec
+          image: hands-on/recommendation-service
           imagePullPolicy: Never
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
             - name: SPRING_CONFIG_LOCATION
-              value: file:/config-repo/application.yml,file:/config-repo/review.yml
+              value: file:/config-repo/application.yml,file:/config-repo/recommendation.yml
           envFrom:
             - secretRef:
                 name: rabbitmq-credentials
             - secretRef:
-                name: mysql-credentials
+                name: mongodb-credentials
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: 1024Mi
+              memory: 1Gi
           livenessProbe:
             httpGet:
               scheme: HTTP
               path: /actuator/info
-              port: 80
+              port: 4004
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
-            failureThreshold: 20
+            failureThreshold: 30
             successThreshold: 1
           readinessProbe:
             httpGet:
               scheme: HTTP
               path: /actuator/health
-              port: 80
+              port: 4004
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
@@ -57,16 +58,4 @@ spec:
       volumes:
         - name: config-repo-volume
           configMap:
-            name: config-repo-review
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: review
-spec:
-  selector:
-    app: review
-  ports:
-    - port: 80
-      targetPort: 80
+            name: config-repo-recommendation

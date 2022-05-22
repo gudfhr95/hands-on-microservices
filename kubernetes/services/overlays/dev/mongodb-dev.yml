@@ -22,7 +22,7 @@ spec:
             - containerPort: 27017
           resources:
             limits:
-              memory: 1024Mi
+              memory: 1Gi
 
 ---
 apiVersion: v1
@@ -33,4 +33,5 @@ spec:
   selector:
     app: mongodb
   ports:
-    - port: 27017
+    - name: mongo
+      port: 27017
